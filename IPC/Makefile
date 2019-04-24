@@ -18,11 +18,11 @@ client: client.c
 submitter: submitter.c
 	gcc -o submitter submitter.c
 
-instagrapd: instargrapd.c
+instagrapd: instagrapd.c
 	gcc -o instagrapd instagrapd.c
 
 worker: worker.c
 	gcc -o worker worker.c
 
 clean:
-	rm -rf pipe client server client submitter worker signal1 signal2 signal3
+	rm -rf pipe client server client submitter worker signal1 signal2 signal3 instagrapd
