@@ -235,7 +235,6 @@ main(int argc, char const *argv[])
 		perror("Error") ;
 		exit(1) ;
 	}
-	printf("%d %d\n", pipes[0], pipes[1]) ;
 
 	child_pid = fork() ;
 	if (child_pid == 0) {
