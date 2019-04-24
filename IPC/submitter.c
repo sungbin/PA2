@@ -5,6 +5,10 @@
 #include <arpa/inet.h>
 #include <string.h>
 #define BUFFER_SIZE 256
+#include <unistd.h>
+#include <error.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 char ip[50] = "";
 char port[10] = "";
