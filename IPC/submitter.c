@@ -13,6 +13,7 @@ char* user_pw;
 char* file_name;
 char result[100001] = "";
 char message[1000001] = "";
+int pipes[2] ;
 
 void cli(int argc, char const *argv[]) {
 	int i;
