@@ -52,6 +52,7 @@ main(int argc, char const *argv[])
 	char buffer[1024] = {0}; 
 
 	listen_fd = socket(AF_INET /*IPv4*/, SOCK_STREAM /*TCP*/, 0 /*IP*/) ;
+	printf("fd: %d\n",listen_fd);
 	if (listen_fd == 0)  { 
 		perror("socket failed : "); 
 		exit(EXIT_FAILURE); 
@@ -73,6 +74,7 @@ main(int argc, char const *argv[])
 		} 
 
 		new_socket = accept(listen_fd, (struct sockaddr *) &address, (socklen_t*)&addrlen) ;
+		printf("new socket: %d\n",new_socket);
 		if (new_socket < 0) {
 			perror("accept"); 
 			exit(EXIT_FAILURE); 

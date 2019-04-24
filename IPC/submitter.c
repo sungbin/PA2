@@ -9,6 +9,8 @@
 #include <error.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/time.h>
+#include <signal.h>
 
 char ip[50] = "";
 char port[10] = "";
@@ -18,7 +20,10 @@ char* file_name;
 char result[100001] = "";
 char message[1000001] = "";
 int pipes[2] ;
+int sock_fd;
 
+void read_file(char const* file_name);
+void handler(int sig);
 void cli(int argc, char const *argv[]) {
 	int i;
         char* ip_port;
@@ -63,7 +68,7 @@ void submit(char const* ip_address, int port, char const* message) {
         strcat(message,"\n<end>");
 
 	struct sockaddr_in serv_addr; 
-	int sock_fd ;
+//	int sock_fd ;
 	int s, len ;
 	char buffer[1024] = {0}; 
 	char * data ;
@@ -117,8 +122,8 @@ void submit(char const* ip_address, int port, char const* message) {
 		}
 
 	}
-
-
+	shutdown(sock_fd, SHUT_WR) ;
+	printf("fd: %d\n",sock_fd);
 }
 
 void read_file(char const* file_name) {
@@ -137,14 +142,22 @@ void read_file(char const* file_name) {
 }
 
 void
-child_proc(int conn)
-{
-	char buf[1024] ;
-	char * data = 0x0, * orig = 0x0 ;
-	int len = 0 ;
-	int s ;
+child_proc(int conn) {
+	
+	
+	
+}
 
-	while ( (s = recv(conn, buf, 1023, 0)) > 0 ) {
+//wating until receive message from instagrapd
+void
+parent_proc(int sock_fd) {
+	int s, len ;
+	char buffer[1024] = {0}; 
+	char buf[1024] ;
+	char * data ;
+	data = 0x0 ;
+	len = 0 ;
+	while ( (s = recv(sock_fd, buf, 1023, 0)) > 0 ) {
 		buf[s] = 0x0 ;
 		if (data == 0x0) {
 			data = strdup(buf) ;
@@ -158,66 +171,12 @@ child_proc(int conn)
 		}
 
 	}
-//	printf(">%s\n", data) ;
-	
-	orig = data ;
-	while (len > 0 && (s = send(conn, data, len, 0)) > 0) {
-		data += s ;
-		len -= s ;
-	}
-	shutdown(conn, SHUT_WR) ;
-	if (orig != 0x0) 
-		free(orig) ;
+	printf(">%s\n", data); 	
 }
+void handler(int sig) {
+	parent_proc(sock_fd) ;
 
-//wating until receive message from instagrapd
-void
-parent_proc(int port_id)
-{
-	int listen_fd, new_socket ; 
-	struct sockaddr_in address; 
-	int opt = 1; 
-	int addrlen = sizeof(address); 
-
-	char buffer[1024] = {0}; 
-
-	listen_fd = socket(AF_INET /*IPv4*/, SOCK_STREAM /*TCP*/, 0 /*IP*/) ;
-	if (listen_fd == 0)  { 
-		perror("socket failed : "); 
-		exit(EXIT_FAILURE); 
-	}
-	
-	memset(&address, '0', sizeof(address)); 
-	address.sin_family = AF_INET; 
-	address.sin_addr.s_addr = INADDR_ANY /* the localhost*/ ; 
-	address.sin_port = htons(port_id); 
-	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-		perror("bind failed : "); 
-		exit(EXIT_FAILURE); 
-	} 
-
-	while (1) {
-		if (listen(listen_fd, 16 /* the size of waiting queue*/) < 0) { 
-			perror("listen failed : "); 
-			exit(EXIT_FAILURE); 
-		} 
-
-		new_socket = accept(listen_fd, (struct sockaddr *) &address, (socklen_t*)&addrlen) ;
-		if (new_socket < 0) {
-			perror("accept"); 
-			exit(EXIT_FAILURE); 
-		} 
-
-		if (fork() > 0) {
-			child_proc(new_socket) ;
-			exit(0);
-		}
-		else {
-			close(new_socket) ;
-		}
-	}
 }
-
 int
 main(int argc, char const *argv[])
 {
@@ -232,15 +191,17 @@ main(int argc, char const *argv[])
 		exit(1) ;
 	}
 
-	child_pid = fork() ;
-	if (child_pid == 0) {
-		submit(ip,atoi(port),message); //ip, port, message
-	}
-	else {
-		parent_proc(atoi(port)) ;
-	}
-	wait(&exit_code) ;
-
+	submit(ip,atoi(port),message); //ip, port, message
+	parent_proc(sock_fd) ;
+	/*
+	struct itimerval t ;
+	signal(SIGALRM, handler) ;
+	t.it_value.tv_sec = 1 ;
+	t.it_value.tv_usec = 100000 ; // 1.1 sec
+	t.it_interval = t.it_value ;
+	setitimer(ITIMER_REAL, &t, 0x0) ;
+	while (1) ;
+	*/
 	exit(0) ;
 	
 }
