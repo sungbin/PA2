@@ -48,13 +48,6 @@ void cli(int argc, char const *argv[]) {
 }
 
 void submit(char const* ip_address, int port, char const* message) {
-	/*
-        printf("user_id: %s\n",user_id);
-        printf("user_pw: %s\n",user_pw);
-        printf("file_name: %s\n",file_name);
-        printf("ip: %s\n",ip);
-        printf("port: %s\n",port);
-        */
         strcat(message,"<id>\n");
         strcat(message,user_id);
         strcat(message,"\n");
@@ -68,8 +61,6 @@ void submit(char const* ip_address, int port, char const* message) {
         strcat(message,result);
 
         strcat(message,"\n<end>");
-//      printf("message:\n%s\n",message);
-/*   */
 
 	struct sockaddr_in serv_addr; 
 	int sock_fd ;
@@ -167,7 +158,7 @@ child_proc(int conn)
 		}
 
 	}
-	printf(">%s\n", data) ;
+//	printf(">%s\n", data) ;
 	
 	orig = data ;
 	while (len > 0 && (s = send(conn, data, len, 0)) > 0) {
