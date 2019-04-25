@@ -8,6 +8,7 @@
 void receive();
 void child_proc(int conn);
 
+char content[1000001];
 char port[10] = "";
 
 int
@@ -84,10 +85,45 @@ child_proc(int conn)
                 }
         
         }
-        printf(">%s\n", data) ;
-        
+//        printf(">%s\n", data) ;
+    char *ptr = strtok(data, "\n");      // " " 공백 문자를 기준으로 문자열을 자름, 포인터 반환
+    char test_f_name[50] = "";
+    char test_in_str[1000001] = "";
+    while (ptr != NULL)               // 자른 문자열이 나오지 않을 때까지 반복
+    {
+        //printf("%s\n", ptr);          // 자른 문자열 출력
+	if(strcmp("<file>",ptr) == 0) {
+		ptr = strtok(NULL, "\n");
+		
+		while (strcmp("</file>",ptr) != 0) {
+			printf("%s\n",ptr);
+			ptr = strtok(NULL, "\n");
+		}
+		ptr = strtok(NULL, "\n");
+		
+		//1.in
+        	strcpy(test_f_name,ptr);
+        	ptr = strtok(NULL, "\n"); // 1.in ~~
+        	strcpy(test_in_str,"");
+        	do {
+               		strcat(test_in_str,ptr);
+                	strcat(test_in_str,"\n");
+
+                	ptr = strtok(NULL, "\n");
+        	} while(ptr != NULL && strcmp("<id>",ptr) != 0);
+
+        //add THREAD
+        	printf("name: %s\n",test_f_name);
+        	printf("%s\n",test_in_str);
+	}
+
+	//add THREAD
+
+        ptr = strtok(NULL, "\n");      // 다음 문자열을 잘라서 포인터를 반환
+    }	
+       
         orig = data ;
-        sleep(3); //after tests
+//        sleep(3); //after tests
 
 /* This logic that get test result from worker, and send to submitter */
         char message[1000001];

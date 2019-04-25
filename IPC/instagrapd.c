@@ -12,6 +12,7 @@ char wip[50] = "";
 char wport[10] = "";
 char* dir_name;
 char port[10] = "";
+char f_content[1000001];
 int send_to_worker(char const* ip_address, int port, char const* message);
 
 void receive();
@@ -64,7 +65,7 @@ child_proc(int conn)
 
 	}
 	printf(">%s\n", data) ;
-	
+	strcpy(f_content,data);
 	orig = data ;
 //	sleep(6); //after tests
 
@@ -106,41 +107,6 @@ int
 main(int argc, char const *argv[]) 
 {
 	cli(argc,argv);
-
-    DIR *dir;
-    struct dirent *ent;
-    dir = opendir (dir_name);
-    if (dir != NULL) {
-  
-    /* print all the files and directories within directory */
-    while ((ent = readdir (dir)) != NULL) {
-	if(ent->d_name[0] == '.')
-		continue;
-        //printf ("./tests/%s\n", ent->d_name);
-	char f_name[100] = "";
-	strcat(f_name,"./tests/");
-	strcat(f_name,ent->d_name);
-	//printf("%s\n",f_name);
-	pid_t child_pid;
-	child_pid = fork();
-	if(child_pid == 0) {
-		
-		execl("./reader", "reader", f_name, (char *) 0x0) ;
-
-	} else {
-	
-		int exit_code ;
-		wait(&exit_code) ;
-	}
-    }
-    closedir (dir);
-    } else {
-         /* could not open directory */
-         perror ("");
-        return EXIT_FAILURE;
-    }
-
-
 	receive();
 } 
 void receive() {
@@ -215,6 +181,61 @@ int send_to_worker(char const* wip_address, int wport, char const* message) {
 //      scanf("%s", buffer) ;
         strcpy(buffer,message);
 
+    DIR *dir;
+    struct dirent *ent;
+    dir = opendir (dir_name);
+    if (dir != NULL) {
+
+    /* print all the files and directories within directory */
+    dir = opendir (dir_name);
+    	pid_t child_pid;
+	/*
+        child_pid = fork();
+        if(child_pid == 0) {
+                dup2(sock_fd, 1) ;
+		printf("file\n");
+		printf("%s\n",f_content);
+		printf("~file\n");
+                printf("%d\n",f_count);
+		exit(0);
+        } else {
+
+                int exit_code ;
+                wait(&exit_code) ;
+        }
+	*/
+
+    while ((ent = readdir (dir)) != NULL) {
+	int f_length = strlen(ent->d_name);
+        if(ent->d_name[f_length - 1] != 'n')
+                continue;
+	
+        char f_name[100] = "";
+        strcat(f_name,"./tests/");
+        strcat(f_name,ent->d_name);
+	
+        child_pid = fork();
+        if(child_pid == 0) {
+		dup2(sock_fd, 1) ;
+                printf("%s\n",f_content);
+		printf("%s\n",f_name);
+                execl("./reader", "reader", f_name, (char *) 0x0) ;
+		close(sock_fd) ;
+        } else {
+
+                int exit_code ;
+                wait(&exit_code) ;
+        }
+    }
+
+    closedir (dir);
+    } else {
+         /* could not open directory */
+         perror ("");
+        return EXIT_FAILURE;
+    }
+	
+	/*
         data = buffer ;
         len = strlen(buffer) ;
         s = 0 ;
@@ -222,7 +243,7 @@ int send_to_worker(char const* wip_address, int wport, char const* message) {
                 data += s ;
                 len -= s ;
         }
-
+	*/
         shutdown(sock_fd, SHUT_WR) ;
 	return sock_fd;
 }

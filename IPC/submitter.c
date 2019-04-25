@@ -117,7 +117,7 @@ void cli(int argc, char const *argv[]) {
         read_file(file_name);
         strcat(message,result);
 
-        strcat(message,"\n<end>");
+        strcat(message,"\n</file>");
 }
 
 void
