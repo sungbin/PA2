@@ -1,9 +1,12 @@
 #include <unistd.h> 
+#include <dirent.h>
 #include <stdio.h> 
 #include <sys/socket.h> 
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
+#include <sys/types.h>
+#include <sys/wait.h>
 
 char wip[50] = "";
 char wport[10] = "";
@@ -103,6 +106,41 @@ int
 main(int argc, char const *argv[]) 
 {
 	cli(argc,argv);
+
+    DIR *dir;
+    struct dirent *ent;
+    dir = opendir (dir_name);
+    if (dir != NULL) {
+  
+    /* print all the files and directories within directory */
+    while ((ent = readdir (dir)) != NULL) {
+	if(ent->d_name[0] == '.')
+		continue;
+        //printf ("./tests/%s\n", ent->d_name);
+	char f_name[100] = "";
+	strcat(f_name,"./tests/");
+	strcat(f_name,ent->d_name);
+	//printf("%s\n",f_name);
+	pid_t child_pid;
+	child_pid = fork();
+	if(child_pid == 0) {
+		
+		execl("./reader", "reader", f_name, (char *) 0x0) ;
+
+	} else {
+	
+		int exit_code ;
+		wait(&exit_code) ;
+	}
+    }
+    closedir (dir);
+    } else {
+         /* could not open directory */
+         perror ("");
+        return EXIT_FAILURE;
+    }
+
+
 	receive();
 } 
 void receive() {

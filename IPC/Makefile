@@ -1,10 +1,12 @@
-all: pipe server client submitter instagrapd worker signals
+all: pipe server client submitter instagrapd worker signals reader
 
 signals: signal1.c signal2.c signal3.c
 	gcc -o signal1 signal1.c
 	gcc -o signal2 signal2.c
 	gcc -o signal3 signal3.c
 
+reader: reader.c
+	gcc -o reader reader.c
 
 pipe: pipe.c
 	gcc -o pipe pipe.c
@@ -25,4 +27,4 @@ worker: worker.c
 	gcc -o worker worker.c
 
 clean:
-	rm -rf pipe client server client submitter worker signal1 signal2 signal3 instagrapd
+	rm -rf pipe client server client submitter worker signal1 signal2 signal3 instagrapd reader
