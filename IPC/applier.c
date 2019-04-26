@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
-	printf("n: %d\n",strlen(argv[3])) ;
+//	printf("n: %d\n",strlen(argv[3])) ;
 
         int des_p[2];
         if(pipe(des_p) == -1) {
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 
 	write(des_p[1], string, strlen(string));
 	close(des_p[1]);
-
+	exit(1);
         }
 
         if(fork() == 0)            //creating 2nd child

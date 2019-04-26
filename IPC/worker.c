@@ -142,6 +142,7 @@ child_proc(int conn)
 //		printf("%s\n",test_in_str);
 
 		//make program with content
+		system("exec rm program program.c");
 			//1. make program.c
 		if(fork() == 0)            //creating 2nd child
         	{
@@ -223,33 +224,17 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 	// apply it: make 1.out
 	if(fork() == 0)            //creating 2nd child
         {
-            close(STDIN_FILENO);   //closing stdin
-
 		int fd = open(out_name, O_WRONLY | O_CREAT, 0644) ;
 		close(STDOUT_FILENO);
 		dup(fd);
-		close(fd) ;
-
+		close(fd);
 		execl("./applier", "./applier", out_name, "program", in_content, (char *) 0x0) ;
-
-            exit(1);
+        	exit(1);
         } else {
-               int exit_code ;
-               wait(&exit_code) ;
+              	 int exit_code ;
+              	 wait(&exit_code) ;
         }
-/*
-	pid_t child_pid = fork() ;
 
-	if (child_pid == 0) {
-		int fd = open(out_name, O_WRONLY | O_CREAT, 0644) ;
-		dup2(fd, 1) ;
-		close(fd) ;
-		execl("./applier", "./applier", out_name, "program", in_content, (char *) 0x0) ;
-	} else {
-		int exit_code ;
-		wait(&exit_code) ;
-	}
-*/
 	// read 1.out
 	strcpy(output,result);
 }
