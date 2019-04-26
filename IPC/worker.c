@@ -206,7 +206,9 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 	pid_t child_pid = fork() ;
 
 	if (child_pid == 0) {
-		//printf("Hello\n") ;
+		int fd = open(out_name, O_WRONLY | O_CREAT, 0644) ;
+		dup2(fd, 1) ;
+		close(fd) ;
 		execl("./applier", "./applier", out_name, "program", in_content, (char *) 0x0) ;
 	} else {
 		int exit_code ;

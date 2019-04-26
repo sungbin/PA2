@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <error.h>
+//#include <error.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>

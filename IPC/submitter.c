@@ -6,7 +6,7 @@
 #include <string.h>
 #define BUFFER_SIZE 256
 #include <unistd.h>
-#include <error.h>
+//#include <error.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/time.h>
