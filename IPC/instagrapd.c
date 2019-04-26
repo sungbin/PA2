@@ -112,9 +112,30 @@ child_proc(int conn)
 		}
 
 	}
-/*
+
+
 	for(int i = 1; i<=count; i++) {
 		printf("#%s\n",list[i]);
+//		if(list[i][strlen(list[i])-1] == 't') {
+//			printf("%s",list[i]);
+/*
+			test_count ++;
+			strcpy(test_name[test_count],list[i]);
+			strcpy(test_result[test_count],"");
+			i++;
+			while(list[i][strlen(list[i])-1] != 't') {
+				strcat(test_result[test_count],list[i]);
+				strcat(test_result[test_count],"\n");
+			}
+			i--;
+
+		}
+*/
+	}
+/*
+	for(int i = 1; i<= test_count; i++) {
+		printf("%s\n",test_name[i]);
+		printf("%s\n",test_result[i]);
 	}
 */
 
