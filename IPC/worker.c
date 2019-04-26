@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <stdlib.h>
@@ -142,10 +143,27 @@ child_proc(int conn)
 
 		//make program with content
 			//1. make program.c
+		if(fork() == 0)            //creating 2nd child
+        	{
+            		close(STDIN_FILENO);   //closing stdin
+
+			int fd = open("program.c", O_WRONLY | O_CREAT, 0644) ;
+			close(STDOUT_FILENO);
+			dup(fd);
+			close(fd) ;
+
+			printf("%s\n",content);
+        	    exit(1);
+        	} else {
+              	 	int exit_code ;
+              	 	wait(&exit_code) ;
+        	}
+/*
 		FILE *f;
        		f=fopen("program.c","w");
         	fprintf(f, content);
         	fclose(f);
+*/
 			//2. compile program.c as program
 		system("exec gcc program.c -o program");
 
@@ -203,6 +221,23 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 //	printf("out name: %s\n",out_name);
 
 	// apply it: make 1.out
+	if(fork() == 0)            //creating 2nd child
+        {
+            close(STDIN_FILENO);   //closing stdin
+
+		int fd = open(out_name, O_WRONLY | O_CREAT, 0644) ;
+		close(STDOUT_FILENO);
+		dup(fd);
+		close(fd) ;
+
+		execl("./applier", "./applier", out_name, "program", in_content, (char *) 0x0) ;
+
+            exit(1);
+        } else {
+               int exit_code ;
+               wait(&exit_code) ;
+        }
+/*
 	pid_t child_pid = fork() ;
 
 	if (child_pid == 0) {
@@ -214,7 +249,7 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 		int exit_code ;
 		wait(&exit_code) ;
 	}
-
+*/
 	// read 1.out
 	strcpy(output,result);
 }
