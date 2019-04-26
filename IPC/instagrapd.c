@@ -93,8 +93,31 @@ child_proc(int conn)
 		}
 
 	} // data is feedback of worker
-	printf(">%s\n", data) ;
-/**/
+
+	printf(">%s", data) ;
+/* data processing */
+	int count = 0;
+	char str[100] = "";
+	char list[1000][1001];
+	for(int i = 0; i<strlen(data); i++) {
+		if(data[i] == '\n') {
+			count ++;
+			strcpy(list[count],str);
+			strcpy(str,"");
+		}
+		else {
+			char temp[5] = "";
+			sprintf(temp,"%c",data[i]);
+			strcat(str,temp);
+		}
+
+	}
+/*
+	for(int i = 1; i<=count; i++) {
+		printf("#%s\n",list[i]);
+	}
+*/
+
 	while (len > 0 && (s = send(conn, data, len, 0)) > 0) { //back to submitter
 		data += s ;
 		len -= s ;
