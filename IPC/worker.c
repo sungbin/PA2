@@ -89,6 +89,7 @@ child_proc(int conn)
         
         }
 //        printf(">%s\n", data) ;
+    char message[1000001] = "";
     char *ptr = strtok(data, "\n");      // " " 공백 문자를 기준으로 문자열을 자름, 포인터 반환
     char test_f_name[50] = "";
     char test_in_str[1000001] = "";
@@ -138,7 +139,7 @@ child_proc(int conn)
 		}
 
 //		printf("%s\n",content);
-		printf("fname: %s\n",str);
+//		printf("fname: %s\n",str);
 //		printf("%s\n",test_in_str);
 
 		//make program with content
@@ -153,7 +154,7 @@ child_proc(int conn)
 			dup(fd);
 			close(fd) ;
 
-			printf("%s\n",content);
+			printf("%s",content);
         	    exit(1);
         	} else {
               	 	int exit_code ;
@@ -171,9 +172,9 @@ child_proc(int conn)
 		//test		
 		char output[100001];
 		test_a_case(output, content, str, test_in_str);
-		printf("%s\n",output);
+		strcat(message,output);
 	}
-
+	
 	//add THREAD
 
         ptr = strtok(NULL, "\n");      // 다음 문자열을 잘라서 포인터를 반환
@@ -183,9 +184,8 @@ child_proc(int conn)
 //        sleep(3); //after tests
 
 /* This logic that get test result from worker, and send to submitter */
-        char message[1000001];
-        
-        strcpy(message,data);
+//        printf(">%s\n",message); 
+        strcpy(data,message);
 /**/    
         while (len > 0 && (s = send(conn, data, len, 0)) > 0) { //back to submitter
                 data += s ;
@@ -198,6 +198,7 @@ child_proc(int conn)
 
 void test_a_case(char output[], char content[], char in_name[], char in_content[]) {
 	char result[100001] = "";
+
 
 	// make 1.in
 
@@ -220,7 +221,8 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 	if(out_name[strlen(out_name)-1] != 't')
 		strcat(out_name,".out");
 //	printf("out name: %s\n",out_name);
-
+	strcat(result,out_name);
+	strcat(result,"\n");
 	// apply it: make 1.out
 	if(fork() == 0)            //creating 2nd child
         {
@@ -236,5 +238,23 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
         }
 
 	// read 1.out
+	char ch;
+	int n;
+	FILE * fp=fopen(out_name,"r");	
+	if(fp==NULL){		
+		printf("파일 오픈 실패 !\n");
+		return ;
+	}
+	while(1){
+		ch=fgetc(fp);
+		if(ch==EOF)
+			break;
+		char temp[5] = "";
+                sprintf(temp,"%c",ch);
+                strcat(result,temp);	
+//		putchar(ch);
+	}
+	fclose(fp);
+	
 	strcpy(output,result);
 }

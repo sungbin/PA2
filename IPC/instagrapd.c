@@ -93,6 +93,7 @@ child_proc(int conn)
 		}
 
 	} // data is feedback of worker
+	printf(">%s\n", data) ;
 /**/
 	while (len > 0 && (s = send(conn, data, len, 0)) > 0) { //back to submitter
 		data += s ;
@@ -189,21 +190,6 @@ int send_to_worker(char const* wip_address, int wport, char const* message) {
     /* print all the files and directories within directory */
     dir = opendir (dir_name);
     	pid_t child_pid;
-	/*
-        child_pid = fork();
-        if(child_pid == 0) {
-                dup2(sock_fd, 1) ;
-		printf("file\n");
-		printf("%s\n",f_content);
-		printf("~file\n");
-                printf("%d\n",f_count);
-		exit(0);
-        } else {
-
-                int exit_code ;
-                wait(&exit_code) ;
-        }
-	*/
 
     while ((ent = readdir (dir)) != NULL) {
 	int f_length = strlen(ent->d_name);
@@ -234,16 +220,6 @@ int send_to_worker(char const* wip_address, int wport, char const* message) {
          perror ("");
         return EXIT_FAILURE;
     }
-	
-	/*
-        data = buffer ;
-        len = strlen(buffer) ;
-        s = 0 ;
-        while (len > 0 && (s = send(sock_fd, data, len, 0)) > 0) {
-                data += s ;
-                len -= s ;
-        }
-	*/
         shutdown(sock_fd, SHUT_WR) ;
 	return sock_fd;
 }
