@@ -1,4 +1,5 @@
 #include <unistd.h> 
+#define BUFFER_SIZE 256
 #include <dirent.h>
 #include <stdio.h> 
 #include <sys/socket.h> 
@@ -16,6 +17,20 @@ char f_content[1000001];
 int send_to_worker(char const* ip_address, int port, char const* message);
 
 void receive();
+void read_file(char const* file_name, char* output) {
+	char result[100001] = "";
+	FILE *fp;
+	char buffer[BUFFER_SIZE + 1];
+
+	if ((fp = fopen(file_name, "r+")) != NULL) {
+		memset(buffer, 0, sizeof(buffer));
+		while (fread(buffer, 1, BUFFER_SIZE, fp) != 0) {
+			strncat(result,buffer,BUFFER_SIZE);
+		}
+		fclose(fp);
+	}
+	strcpy(output,result);
+}
 void cli(int argc, char const *argv[]) {
         int i;
         char* wip_port;
@@ -113,24 +128,37 @@ child_proc(int conn)
 
 	}
 
-
+	char ct[100001];
+	char output[100001];
+	char file_name[50];
+	char mes[100001] = "";
 	for(int i = 1; i<=count; i++) {
-		printf("#%s\n",list[i]);
-//		if(list[i][strlen(list[i])-1] == 't') {
-//			printf("%s",list[i]);
-/*
-			test_count ++;
-			strcpy(test_name[test_count],list[i]);
-			strcpy(test_result[test_count],"");
-			i++;
-			while(list[i][strlen(list[i])-1] != 't') {
-				strcat(test_result[test_count],list[i]);
-				strcat(test_result[test_count],"\n");
-			}
-			i--;
-
+		if(list[i][strlen(list[i])-1] == 't') {
+			strcpy(file_name,"");
+			strcpy(ct,"");
+			strcat(file_name,dir_name);
+			strcat(file_name,"/");
+			strcat(file_name,list[i]);
+			read_file(file_name,output);
+		//	printf("name: %s\n",file_name);
+		//	printf("collected: %s",output);
 		}
-*/
+		else {
+			strcat(ct,list[i]);
+			strcat(ct,"\n");
+			if(i+1>count  ||  i+1 <= count && list[i+1][strlen(list[i+1])-1] == 't') {
+		//		printf("answer: %s\n",ct);
+				if(strcmp(output,ct) == 0) {
+					strcat(mes,file_name);
+					strcat(mes,": pass\n");
+//					printf("%s: pass\n",file_name);
+				} else {
+					strcat(mes,file_name);
+                                        strcat(mes,": fail\n");
+//					printf("%s: fail\n",file_name);
+				}
+			}
+		}
 	}
 /*
 	for(int i = 1; i<= test_count; i++) {
@@ -138,6 +166,8 @@ child_proc(int conn)
 		printf("%s\n",test_result[i]);
 	}
 */
+	strcpy(data,mes);
+	len = strlen(mes);
 
 	while (len > 0 && (s = send(conn, data, len, 0)) > 0) { //back to submitter
 		data += s ;

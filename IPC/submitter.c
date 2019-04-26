@@ -139,7 +139,7 @@ parent_proc(int sock_fd) {
 		}
 
 	}
-	printf(">%s\n", data); 	
+	printf("%s\n", data); 	
 }
 
 void receive() {
@@ -160,7 +160,7 @@ void receive() {
                 }
 
         }
-        printf(">%s\n", data);
+        printf("%s\n", data);
 }
 
 int 
