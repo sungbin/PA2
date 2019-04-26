@@ -7,6 +7,8 @@
 
 void receive();
 void child_proc(int conn);
+void test_a_case(char output[], char content[], char in_name[], char in_content[]);
+
 
 char content[1000001];
 char port[10] = "";
@@ -95,8 +97,13 @@ child_proc(int conn)
 	if(strcmp("<file>",ptr) == 0) {
 		ptr = strtok(NULL, "\n");
 		
+		char content[100001] = "";
+
 		while (strcmp("</file>",ptr) != 0) {
-			printf("%s\n",ptr);
+//			printf("%s\n",ptr);
+			strcat(content,ptr);
+			strcat(content,"\n");
+
 			ptr = strtok(NULL, "\n");
 		}
 		ptr = strtok(NULL, "\n");
@@ -113,8 +120,39 @@ child_proc(int conn)
         	} while(ptr != NULL && strcmp("<id>",ptr) != 0);
 
         //add THREAD
-        	printf("name: %s\n",test_f_name);
-        	printf("%s\n",test_in_str);
+		int leng = strlen(test_f_name);
+		int i,div;
+		char str[50] = "";
+		for(i = leng-1; i >= 0; i--) {
+			if(test_f_name[i] == '/' || test_f_name[i] == '\\') {
+				div = i;
+				break;
+			}
+		}
+		for(i = div+1; i<leng; i++) {
+
+			char temp[5] = "";
+                	sprintf(temp,"%c",test_f_name[i]);
+                	strcat(str,temp);
+		}
+
+//		printf("%s\n",content);
+		printf("fname: %s\n",str);
+//		printf("%s\n",test_in_str);
+
+		//make program with content
+			//1. make program.c
+		FILE *f;
+       		f=fopen("program.c","w");
+        	fprintf(f, content);
+        	fclose(f);
+			//2. compile program.c as program
+		system("exec gcc program.c -o program");
+
+		//test		
+		char output[100001];
+		test_a_case(output, content, str, test_in_str);
+		printf("%s\n",output);
 	}
 
 	//add THREAD
@@ -139,3 +177,42 @@ child_proc(int conn)
                 free(orig) ;
 }
 
+void test_a_case(char output[], char content[], char in_name[], char in_content[]) {
+	char result[100001] = "";
+
+	// make 1.in
+
+	FILE *f;
+
+	f=fopen(in_name,"w");
+	fprintf(f,in_content);
+	fclose(f);
+
+	// name of output
+	int div;
+	char out_name[50];
+	for(int i = 0; i < strlen(in_name); i++) {
+		if(in_name[i] == '.') {
+			div = i;
+			break;
+		}
+	}
+	strncpy(out_name,in_name,div);
+	if(out_name[strlen(out_name)-1] != 't')
+		strcat(out_name,".out");
+//	printf("out name: %s\n",out_name);
+
+	// apply it: make 1.out
+	pid_t child_pid = fork() ;
+
+	if (child_pid == 0) {
+		//printf("Hello\n") ;
+		execl("./applier", "./applier", out_name, "program", in_content, (char *) 0x0) ;
+	} else {
+		int exit_code ;
+		wait(&exit_code) ;
+	}
+
+	// read 1.out
+	strcpy(output,result);
+}
