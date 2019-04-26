@@ -8,6 +8,14 @@
 
 int main(int argc, char** argv)
 {
+
+	if(argc != 4) {
+		printf("error: argc is %d\n",argc);
+		exit(1);
+	}
+
+	printf("n: %d\n",strlen(argv[3])) ;
+
         int des_p[2];
         if(pipe(des_p) == -1) {
           perror("Pipe failed");
@@ -19,12 +27,13 @@ int main(int argc, char** argv)
             close(STDOUT_FILENO);  //closing stdout
             dup(des_p[1]);         //replacing stdout with pipe write 
             close(des_p[0]);       //closing pipe read
-//            close(des_p[1]);
 
-	char string[50] = "Hi~!\n";
+	char string[10001] = "";
+	strcpy(string,argv[3]);
+	strcat(string,"\n");
+
 	write(des_p[1], string, strlen(string));
 	close(des_p[1]);
-//	    printf("Hi~!\n");
 
         }
 
@@ -34,17 +43,15 @@ int main(int argc, char** argv)
 
             dup(des_p[0]);         //replacing stdin with pipe read
             close(des_p[1]);       //closing pipe write
-//            close(des_p[0]);
-	
 		
-		int fd = open("hello.out", O_WRONLY | O_CREAT, 0644) ;
+		int fd = open(argv[1], O_WRONLY | O_CREAT, 0644) ;
 		close(STDOUT_FILENO);
 		dup(fd);
 		close(des_p[0]); 
 		close(fd) ;
 
 
-	    execl("./printer", "printer", (char *) 0x0) ;
+	    execl(argv[2], argv[2], (char *) 0x0) ;
             exit(1);
         }
 
