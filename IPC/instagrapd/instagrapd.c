@@ -1,4 +1,5 @@
 #include <unistd.h> 
+#include <stdbool.h>
 #define BUFFER_SIZE 256
 #include <dirent.h>
 #include <stdio.h> 
@@ -14,6 +15,11 @@ char wport[10] = "";
 char* dir_name;
 char port[10] = "";
 char f_content[1000001];
+int __count = 0;
+char ids[5000][50];
+char pws[5000][50];
+
+
 int send_to_worker(char const* ip_address, int port, char const* message);
 
 void receive();
@@ -82,23 +88,65 @@ child_proc(int conn)
 	printf(">%s\n", data) ;
 	strcpy(f_content,data);
 	orig = data ;
-//	sleep(6); //after tests
+
+// id, pw
+	char *ptr = strtok(data, "\n");      // " " 공백 문자를 기준으로 문자열을 자름, >    포인터 반환
+	bool st = false;
+        while (ptr != NULL) {
+		if(strcmp(ptr,"<id>") == 0) {
+			ptr = strtok(NULL, "\n"); //sb
+			char user_id[50];
+			char user_pw[50];
+			strcpy(user_id,ptr);
+			ptr = strtok(NULL, "\n"); // <pw>
+                        ptr = strtok(NULL, "\n"); // pass
+			strcpy(user_pw,ptr);
+
+			// duplicated check id
+			int i;
+			bool is_exist = false;
+			for(i = __count-1; i >= 0; i--) {
+				if(strcmp( ids[i],user_id ) == 0) {
+					is_exist = true;
+					if(strcmp( pws[i],user_pw ) == 0) {
+						// load or bring user data	
+					} else {
+						st = true; //inappriate
+					}
+					break;
+				}
+			}
+			if(!is_exist) {
+				strcpy(ids[__count],user_id);
+				strcpy(pws[__count],user_pw);
+				__count ++;
+			}
+
+		}
+		ptr = strtok(NULL, "\n");
+	}
+
+
 
 /* This logic that get test result from worker, and send to submitter */
 	char message[1000001];
 	
 	strcpy(message,data);
 
+	if(st) {
+		strcpy(data, "password is long\n");
+		len = strlen(data);
+	} else {
 
-	int fd_worker = send_to_worker(wip,atoi(wport),message);
+		int fd_worker = send_to_worker(wip,atoi(wport),message);
 	
-	data = 0x0 ;
-	len = 0 ;
-	while ( (s = recv(fd_worker, buf, 1023, 0)) > 0 ) {
-		buf[s] = 0x0 ;
-		if (data == 0x0) {
-			data = strdup(buf) ;
-			len = s ;
+		data = 0x0 ;
+		len = 0 ;
+		while ( (s = recv(fd_worker, buf, 1023, 0)) > 0 ) {
+			buf[s] = 0x0 ;
+			if (data == 0x0) {
+				data = strdup(buf) ;
+				len = s ;
 		}
 		else {
 			data = realloc(data, len + s + 1) ;
@@ -107,7 +155,7 @@ child_proc(int conn)
 			len += s ;
 		}
 
-	} // data is feedback of worker
+		} // data is feedback of worker
 
 	printf(">%s", data) ;
 /* data processing */
@@ -153,9 +201,9 @@ child_proc(int conn)
 			strcat(ct,list[i]);
 			strcat(ct,"\n");
 			if(i+1>count  ||  i+1 <= count && list[i+1][strlen(list[i+1])-1] == 't') {
-				printf("answer: %s\n",ct);
-				printf("collec: %s\n",output);
-				printf("cmp: %d\n",strcmp(output,ct));
+				//printf("answer: %s\n",ct);
+				//printf("collec: %s\n",output);
+				//printf("cmp: %d\n",strcmp(output,ct));
 				if(strcmp(list[i],"3 seconds") == 0) {
 					strcat(mes,file_name);
 					strcat(mes,": exceed 3 seconds\n");
@@ -174,6 +222,7 @@ child_proc(int conn)
 	}
 	strcpy(data,mes);
 	len = strlen(mes);
+	}
 
 	while (len > 0 && (s = send(conn, data, len, 0)) > 0) { //back to submitter
 		data += s ;
