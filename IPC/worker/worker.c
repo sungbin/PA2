@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <pthread.h>
 #include <time.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -11,6 +12,7 @@ void receive();
 void child_proc(int conn);
 void test_a_case(char output[], char content[], char in_name[], char in_content[], char program[], char program_c[]);
 
+void* ff(void* arg);
 void function(char* test_f_name, char* _content, char* message, char* test_in_str);
 char content[1000001];
 char port[10] = "";
@@ -149,10 +151,14 @@ child_proc(int conn)
 
         ptr = strtok(NULL, "\n");      // 다음 문자열을 잘라서 포인터를 반환
     }	
-         
+        pthread_t thread[5000];
 	for(int i = 0; i<_count; i++) {
-	//	printf("test_f_name:%s\n",args[i]->test_f_name);
-		function(args[i]->test_f_name, args[i]->_content,args[i]->message, args[i]->test_in_str);
+	//	function(args[i]->test_f_name, args[i]->_content,args[i]->message, args[i]->test_in_str);
+	
+		pthread_create(&thread[i], NULL, ff, (void*) args[i]);
+	}
+	for(int i = 0; i<_count; i++) {
+		pthread_join( thread[i], NULL);
 	}
 
         orig = data ;
@@ -325,4 +331,8 @@ void function(char* test_f_name, char* _content, char* message, char* test_in_st
 			test_a_case(output, _content, str, test_in_str,program,program_c);
 			strcat(message,output);
 		}
+}
+void* ff(void* arg) {
+	struct Arg* marg = (struct Arg*) arg;
+	function(marg->test_f_name, marg->_content,marg->message, marg->test_in_str);
 }
