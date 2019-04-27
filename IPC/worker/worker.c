@@ -138,10 +138,6 @@ child_proc(int conn)
                 	strcat(str,temp);
 		}
 
-//		printf("%s\n",content);
-//		printf("fname: %s\n",str);
-//		printf("%s\n",test_in_str);
-
 		//make program with content
 		system("exec rm program program.c");
 			//1. make program.c
@@ -160,12 +156,6 @@ child_proc(int conn)
               	 	int exit_code ;
               	 	wait(&exit_code) ;
         	}
-/*
-		FILE *f;
-       		f=fopen("program.c","w");
-        	fprintf(f, content);
-        	fclose(f);
-*/
 			//2. compile program.c as program
 		system("exec gcc program.c -o program");
 
@@ -181,10 +171,6 @@ child_proc(int conn)
     }	
        
         orig = data ;
-//        sleep(3); //after tests
-
-/* This logic that get test result from worker, and send to submitter */
-//        printf(">%s\n",message); 
         strcpy(data,message);
 /**/    
         while (len > 0 && (s = send(conn, data, len, 0)) > 0) { //back to submitter
@@ -255,6 +241,17 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 //		putchar(ch);
 	}
 	fclose(fp);
+	char t_command[70] = "";
+	strcat(t_command,"exec rm ");
+	strcat(t_command,in_name);
+	strcat(t_command," ");
+	strcat(t_command,out_name);
+	strcat(t_command," ");
+	strcat(t_command,"program");	
+	strcat(t_command," ");
+	strcat(t_command,"program.c");
 	
+	system(t_command);
+
 	strcpy(output,result);
 }
