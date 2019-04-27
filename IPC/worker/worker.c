@@ -19,6 +19,7 @@ char port[10] = "";
 struct Arg {
 	char test_id[50];
 	char content[100001];
+	char test_in_str[100001];
 	char result[100001];
 };
 
@@ -164,11 +165,12 @@ child_proc(int conn)
 
 		strcpy(args[arg_count].test_id,test_id);
 		strcpy(args[arg_count].content,content);
+		strcpy(args[arg_count].test_in_str,test_in_str);
 		arg_count++;
 	}
 	
 	//add THREAD
-	/*
+	
 	pthread_t threads[1000001];
 	for(int i = 0; i < arg_count; i++) {
 		pthread_create(&(threads[i]), NULL, function, (void*) &args[i]);
@@ -179,7 +181,7 @@ child_proc(int conn)
 	for(int i = 0; i < arg_count; i++) {
 		strcat(message,args[i].result);
 	}
-*/
+
 
         ptr = strtok(NULL, "\n");      // 다음 문자열을 잘라서 포인터를 반환
     }	
@@ -330,10 +332,12 @@ void* function(void *arg) {
 		{
 			strcpy(marg->result,"build fail\n");
 		} else {
-
+			char str[100] = "";
+			strcat(str,marg->test_id);
+			strcat(str,".in");
 		//test		
 			char output[100001];
-			//test_a_case(output, content, str, test_in_str); //test_in_name, test_in_str
+			test_a_case(output, content, str, marg->test_in_str); //test_in_name, test_in_str
 			strcpy(marg->result,output);
 		}
 }
