@@ -8,12 +8,19 @@
 #include <string.h>
 
 void receive();
+void* function(void *arg);
 void child_proc(int conn);
 void test_a_case(char output[], char content[], char in_name[], char in_content[]);
 
 
 char content[1000001];
 char port[10] = "";
+
+struct Arg {
+	char test_id[50];
+	char content[100001];
+	char result[100001];
+};
 
 int
 main(int argc, char const *argv[])
@@ -94,6 +101,10 @@ child_proc(int conn)
     char *ptr = strtok(data, "\n");      // " " 공백 문자를 기준으로 문자열을 자름, 포인터 반환
     char test_f_name[50] = "";
     char test_in_str[1000001] = "";
+    int arg_count = 0;
+    struct Arg args[1000001];
+
+
     while (ptr != NULL)               // 자른 문자열이 나오지 않을 때까지 반복
     {
         //printf("%s\n", ptr);          // 자른 문자열 출력
@@ -121,8 +132,12 @@ child_proc(int conn)
 
                 	ptr = strtok(NULL, "\n");
         	} while(ptr != NULL && strcmp("<id>",ptr) != 0);
+		
+		printf("test_in_str: %s\n",test_in_str);
+		printf("content: %s\n",content);
 
-        //add THREAD
+        //add THREAD: test_id, content
+	//get test_id
 		int leng = strlen(test_f_name);
 		int i,div;
 		char str[50] = "";
@@ -138,52 +153,33 @@ child_proc(int conn)
                 	sprintf(temp,"%c",test_f_name[i]);
                 	strcat(str,temp);
 		}
-
-		//make program with content
-		system("exec rm program program.c");
-			//1. make program.c
-		if(fork() == 0)            //creating 2nd child
-        	{
-            		close(STDIN_FILENO);   //closing stdin
-
-			int fd = open("program.c", O_WRONLY | O_CREAT, 0644) ;
-			close(STDOUT_FILENO);
-			dup(fd);
-			close(fd) ;
-
-			printf("%s",content);
-        	    exit(1);
-        	} else {
-              	 	int exit_code ;
-              	 	wait(&exit_code) ;
+		for(i = 0; i < strlen(str); i++) {
+ 	               if(str[i] == '.') {
+        	                div = i;
+                        break;
+              	  }
         	}
-			//2. compile program.c as program
-		system("exec gcc program.c -o program");
-		int nResult = access( "./program", 0 );
-		if( nResult == -1 )
-		{
-			//TODO: build fail Error!
-			strcpy(message,"build fail\n");
-			break;
-		}
-		// time count
-/*
-		bool build_time_exceed = false;
-		time_t start,end;
-		start = time(NULL);
+		char test_id = "";
+        	strncpy(test_id,str,div); //test_id: 
 
-		end = time(NULL);
-		if((end - start) > 3.0)
-			build_time_exceed = true;
-*/
-
-		//test		
-		char output[100001];
-		test_a_case(output, content, str, test_in_str);
-		strcat(message,output);
+		strcpy(args[arg_count].test_id,test_id);
+		strcpy(args[arg_count].content,content);
+		arg_count++;
 	}
 	
 	//add THREAD
+	/*
+	pthread_t threads[1000001];
+	for(int i = 0; i < arg_count; i++) {
+		pthread_create(&(threads[i]), NULL, function, (void*) &args[i]);
+	}
+	for(int i = 0; i < arg_count; i++) {
+		pthread_join(threads[i], NULL);
+        }
+	for(int i = 0; i < arg_count; i++) {
+		strcat(message,args[i].result);
+	}
+*/
 
         ptr = strtok(NULL, "\n");      // 다음 문자열을 잘라서 포인터를 반환
     }	
@@ -278,3 +274,67 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 
 	strcpy(output,result);
 }
+/*
+struct Arg {
+        char test_id[50];
+        char content[100001];
+        char result[100001];
+}
+*/
+void* function(void *arg) {
+    struct Arg *marg = (struct Arg *)arg;
+    char program[500];
+    char program_c[500];
+    strcpy(program,"program");
+    strcat(program,marg->test_id);
+    strcpy(program_c,program);
+    strcat(program_c,".c");
+
+	//make program with content
+		char rm_1[500];
+		strcpy(rm_1,"exec rm ");
+		strcat(rm_1,program);
+		strcat(rm_1," ");
+		strcat(rm_1,program_c);
+
+		system(rm_1);
+			//1. make program.c
+		if(fork() == 0)            //creating 2nd child
+        	{
+            		close(STDIN_FILENO);   //closing stdin
+
+			int fd = open(program_c, O_WRONLY | O_CREAT, 0644) ;
+			close(STDOUT_FILENO);
+			dup(fd);
+			close(fd) ;
+
+			printf("%s",content);
+        	    exit(1);
+        	} else {
+              	 	int exit_code ;
+              	 	wait(&exit_code) ;
+        	}
+			//2. compile program.c as program
+		char rm_2[500];
+                strcpy(rm_2,"exec gcc -o ");
+                strcat(rm_2,program);
+                strcat(rm_2," ");
+                strcat(rm_2,program_c);
+
+		system(rm_2);
+		char ar_3[100];
+		strcpy(ar_3,"./");
+		strcat(ar_3,program);
+		int nResult = access( ar_3, 0 );
+		if( nResult == -1 )
+		{
+			strcpy(marg->result,"build fail\n");
+		} else {
+
+		//test		
+			char output[100001];
+			//test_a_case(output, content, str, test_in_str); //test_in_name, test_in_str
+			strcpy(marg->result,output);
+		}
+}
+
