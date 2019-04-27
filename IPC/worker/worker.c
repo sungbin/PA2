@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <time.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -158,6 +159,23 @@ child_proc(int conn)
         	}
 			//2. compile program.c as program
 		system("exec gcc program.c -o program");
+		int nResult = access( "./program", 0 );
+		if( nResult == -1 )
+		{
+			//TODO: build fail Error!
+			strcpy(message,"build fail\n");
+			break;
+		}
+		// time count
+/*
+		bool build_time_exceed = false;
+		time_t start,end;
+		start = time(NULL);
+
+		end = time(NULL);
+		if((end - start) > 3.0)
+			build_time_exceed = true;
+*/
 
 		//test		
 		char output[100001];
@@ -173,6 +191,7 @@ child_proc(int conn)
         orig = data ;
         strcpy(data,message);
 /**/    
+	printf(">%s\n",data);
         while (len > 0 && (s = send(conn, data, len, 0)) > 0) { //back to submitter
                 data += s ;
                 len -= s ;
@@ -210,7 +229,9 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 	strcat(result,out_name);
 	strcat(result,"\n");
 	// apply it: make 1.out
-	if(fork() == 0)            //creating 2nd child
+	pid_t child_pid = fork() ;
+
+	if(child_pid == 0)            //creating 2nd child
         {
 		int fd = open(out_name, O_WRONLY | O_CREAT, 0644) ;
 		close(STDOUT_FILENO);
@@ -219,9 +240,11 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 		execl("./applier", "./applier", out_name, "program", in_content, (char *) 0x0) ;
         	exit(1);
         } else {
-              	 int exit_code ;
-              	 wait(&exit_code) ;
+		sleep(3);
+		kill(child_pid, SIGKILL);
+		wait(0x0);
         }
+
 
 	// read 1.out
 	char ch;
@@ -251,7 +274,7 @@ void test_a_case(char output[], char content[], char in_name[], char in_content[
 	strcat(t_command," ");
 	strcat(t_command,"program.c");
 	
-	system(t_command);
+	system(t_command); //clear command
 
 	strcpy(output,result);
 }

@@ -128,11 +128,15 @@ child_proc(int conn)
 
 	}
 
-	char ct[100001];
-	char output[100001];
+	char ct[100001]; //answer
+	char output[100001]; //correct
 	char file_name[50];
 	char mes[100001] = "";
 	for(int i = 1; i<=count; i++) {
+		if(strcmp(list[i],"build fail") == 0) {
+			strcpy(mes,list[i]);
+			break;	
+		}
 		if(list[i][strlen(list[i])-1] == 't') {
 			strcpy(file_name,"");
 			strcpy(ct,"");
@@ -140,15 +144,23 @@ child_proc(int conn)
 			strcat(file_name,"/");
 			strcat(file_name,list[i]);
 			read_file(file_name,output);
-		//	printf("name: %s\n",file_name);
-		//	printf("collected: %s",output);
+			if(i+1>count || list[i+1][strlen(list[i+1])-1] == 't') {
+				strcat(mes,file_name);
+				strcat(mes,": exceed 3 seconds\n");
+			}
 		}
 		else {
 			strcat(ct,list[i]);
 			strcat(ct,"\n");
 			if(i+1>count  ||  i+1 <= count && list[i+1][strlen(list[i+1])-1] == 't') {
-		//		printf("answer: %s\n",ct);
-				if(strcmp(output,ct) == 0) {
+				printf("answer: %s\n",ct);
+				printf("collec: %s\n",output);
+				printf("cmp: %d\n",strcmp(output,ct));
+				if(strcmp(list[i],"3 seconds") == 0) {
+					strcat(mes,file_name);
+					strcat(mes,": exceed 3 seconds\n");
+				}
+				else if(strcmp(output,ct) == 0) {
 					strcat(mes,file_name);
 					strcat(mes,": pass\n");
 //					printf("%s: pass\n",file_name);
@@ -160,12 +172,6 @@ child_proc(int conn)
 			}
 		}
 	}
-/*
-	for(int i = 1; i<= test_count; i++) {
-		printf("%s\n",test_name[i]);
-		printf("%s\n",test_result[i]);
-	}
-*/
 	strcpy(data,mes);
 	len = strlen(mes);
 

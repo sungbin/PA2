@@ -1,13 +1,39 @@
 #include <unistd.h>
+#include <signal.h>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
+time_t start;
+char f_name[500];
+
+void
+handler(int sig)
+{
+	if(time(NULL) - start > 3.0) {
+		kill(0, SIGKILL);
+		wait(0x0);
+	
+		int fd = open(f_name, O_WRONLY | O_CREAT, 0644) ;
+                close(STDOUT_FILENO);
+                dup(fd);
+		
+		printf("3 seconds");
+
+		exit(0) ;	
+	} else {
+		return;
+	}
+}
+
 
 int main(int argc, char** argv)
 {
+	signal(SIGTERM, handler) ;
+	strcpy(f_name,argv[1]);
 
 	if(argc < 4) {
 		printf("error: argc is %d\n",argc);
@@ -36,7 +62,7 @@ int main(int argc, char** argv)
 	close(des_p[1]);
 	exit(1);
         }
-
+	start = time(NULL);
         if(fork() == 0)            //creating 2nd child
         {
             close(STDIN_FILENO);   //closing stdin

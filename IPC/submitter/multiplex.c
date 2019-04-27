@@ -1,13 +1,14 @@
 #include <stdio.h>
 
 int main() {
-	int count, a,b, sum = 0;
+	int count;
 	scanf("%d",&count);
-	for(int i = 0; i < count; i++) {
+	for(int i = 0; i< count; i++) {
+		int a,b;
 		scanf("%d %d",&a,&b);
-		sum += (a * b);
+		printf("%d\n",(a*b));
 	}
-	printf("%d\n",sum);
+
 
 	return 0;
 }
