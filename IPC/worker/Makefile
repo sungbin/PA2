@@ -7,4 +7,4 @@ worker: worker.c
 	gcc -o worker worker.c
 
 clean:
-	rm -rf worker applier
+	rm -rf worker applier *.out *.in
