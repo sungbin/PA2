@@ -163,9 +163,7 @@ void receive() {
         printf("%s\n", data);
 }
 
-int 
-main(int argc, char const *argv[]) 
-{ 
+int main(int argc, char const *argv[]) { 
 	cli(argc,argv);
 	submit(ip,atoi(port),message); //ip, port, message`
 	receive();
