@@ -16,8 +16,8 @@ char wport[10] = "";
 char* dir_name;
 char port[10] = "";
 char f_content[1000001];
-char ids[ID_COUNT][50] = {"s21700613","s21500593"};
-char pws[ID_COUNT][50] = {"qls613","wls593"};
+char ids[ID_COUNT][50] = {"21700613","21500593"};
+char pws[ID_COUNT][50] = {"12341234","12341234"};
 
 int send_to_worker(char const* ip_address, int port, char const* message);
 
@@ -39,6 +39,7 @@ void read_file(char const* file_name, char* output) {
 void cli(int argc, char const *argv[]) {
         int i;
         char* wip_port;
+	
 
 
         for(i = 1; i < argc; i+=2) {
@@ -61,6 +62,7 @@ void cli(int argc, char const *argv[]) {
                 sprintf(temp,"%c",wip_port[i]);
                 strcat(wport,temp);
         }
+	
 }
 
 void
@@ -101,6 +103,15 @@ child_proc(int conn)
 			ptr = strtok(NULL, "\n"); // <pw>
                         ptr = strtok(NULL, "\n"); // pass
 			strcpy(user_pw,ptr);
+			
+			//id length Exception
+			if(strlen(user_id) != 8) {
+				printf("id length should be 8!");
+			}
+			//password length Exception
+			if(strlen(user_pw) != 8) {
+				printf("password length should be 8!");
+			}
 
 			// duplicated check id
 			int i;
