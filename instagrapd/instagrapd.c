@@ -10,15 +10,14 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#define ID_COUNT 2
 char wip[50] = "";
 char wport[10] = "";
 char* dir_name;
 char port[10] = "";
 char f_content[1000001];
-int __count = 0;
-char ids[5000][50];
-char pws[5000][50];
-
+char ids[ID_COUNT][50] = {"s21700613","s21500593"};
+char pws[ID_COUNT][50] = {"qls613","wls593"};
 
 int send_to_worker(char const* ip_address, int port, char const* message);
 
@@ -40,6 +39,7 @@ void read_file(char const* file_name, char* output) {
 void cli(int argc, char const *argv[]) {
         int i;
         char* wip_port;
+
 
         for(i = 1; i < argc; i+=2) {
                 if(strcmp("-w", argv[i]) == 0) {
@@ -104,22 +104,17 @@ child_proc(int conn)
 
 			// duplicated check id
 			int i;
-			bool is_exist = false;
-			for(i = __count-1; i >= 0; i--) {
+			for(i = 0; i < ID_COUNT; i++) {
 				if(strcmp( ids[i],user_id ) == 0) {
-					is_exist = true;
 					if(strcmp( pws[i],user_pw ) == 0) {
+						st = false;
 						// load or bring user data	
 					} else {
 						st = true; //inappriate
 					}
 					break;
 				}
-			}
-			if(!is_exist) {
-				strcpy(ids[__count],user_id);
-				strcpy(pws[__count],user_pw);
-				__count ++;
+				st = true;
 			}
 
 		}
@@ -352,3 +347,4 @@ int send_to_worker(char const* wip_address, int wport, char const* message) {
         shutdown(sock_fd, SHUT_WR) ;
 	return sock_fd;
 }
+
