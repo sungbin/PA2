@@ -114,7 +114,7 @@ child_proc(int conn)
 					}
 					break;
 				}
-				st = true;
+				st = false;
 			}
 
 		}
